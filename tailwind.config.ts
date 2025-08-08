@@ -52,6 +52,10 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Brand palette
+				brand: 'hsl(var(--brand))',
+				'brand-2': 'hsl(var(--brand-2))',
+				'brand-3': 'hsl(var(--brand-3))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -62,6 +66,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'Helvetica', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol']
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
