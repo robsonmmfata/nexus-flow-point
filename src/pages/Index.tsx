@@ -30,6 +30,7 @@ const Index = () => {
           <span className="font-semibold">PDV Multi-nicho</span>
         </div>
         <nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
+          <a href="/catalog" className="hover:text-foreground">Catálogo</a>
           <a href="#modulos" className="hover:text-foreground">Módulos</a>
           <a href="#recursos" className="hover:text-foreground">Recursos</a>
           <a href="#demo" className="hover:text-foreground">Demo</a>
@@ -46,6 +47,9 @@ const Index = () => {
               <p className="mt-4 text-lg text-muted-foreground">Rápido, confiável e pronto para touchscreen, com módulos ativáveis conforme seu segmento.</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button variant="hero" onClick={() => navigate("/pdv")}>Abrir PDV Demo</Button>
+                <Button variant="outline" asChild>
+                  <a href="/catalog">Abrir Catálogo</a>
+                </Button>
                 <Button variant="outline" asChild>
                   <a href="#modulos">Ver módulos</a>
                 </Button>

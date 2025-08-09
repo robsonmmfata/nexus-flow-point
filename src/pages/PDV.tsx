@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useProducts } from "@/store/products";
 
 interface Product {
   id: string;
@@ -61,13 +62,30 @@ export default function PDV() {
   // Pagamentos
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
 
+  const { products: catalog } = useProducts();
+  const sourceProducts: Product[] = useMemo(() => {
+    if (catalog.length) {
+      return catalog
+        .filter((p) => p.visible !== false)
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          sku: p.sku,
+          type: p.type === "weight" || (p as any).weighable ? "weight" : (p.type === "service" ? "service" : "unit"),
+          unit: p.unit || "un",
+        }));
+    }
+    return sampleProducts;
+  }, [catalog]);
+
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sampleProducts;
-    return sampleProducts.filter(p =>
+    if (!q) return sourceProducts;
+    return sourceProducts.filter(p =>
       p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, sourceProducts]);
 
   const addItem = (p: Product) => {
     setItems(prev => {
