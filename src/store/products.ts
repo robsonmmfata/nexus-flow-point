@@ -26,7 +26,7 @@ const seed: CatalogProduct[] = [
     weighable: false,
     scaleEnabled: false,
     printSector: "balcao",
-    image: undefined,
+    image: undefined, // pode ser data URL ou caminho importado
     composition: [],
     createdAt: nowISO(),
     updatedAt: nowISO(),

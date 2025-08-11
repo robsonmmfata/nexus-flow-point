@@ -12,6 +12,12 @@ import { useProducts } from "@/store/products";
 import { Sector } from "@/types/product";
 import { ensurePrinterConnected, printSaleReceipt, printSectorTickets } from "@/features/printing/print";
 import { loadSettings } from "@/store/settings";
+import imgCamiseta from "@/assets/products/camiseta.jpg";
+import imgCafe from "@/assets/products/cafe-espresso.jpg";
+import imgPao from "@/assets/products/pao-de-queijo.jpg";
+import imgBanana from "@/assets/products/banana.jpg";
+import imgPizzaFatia from "@/assets/products/pizza-fatia.jpg";
+import imgCerveja from "@/assets/products/cerveja-600.jpg";
 
 interface Product {
   id: string;
@@ -20,6 +26,8 @@ interface Product {
   sku?: string;
   type?: "unit" | "weight" | "service";
   unit?: string; // ex: un, kg, g, lt
+  image?: string;
+  category?: string;
 }
 
 interface CartItem extends Product {
@@ -30,18 +38,18 @@ interface CartItem extends Product {
 }
 
 const sampleProducts: Product[] = [
-  { id: "1", name: "Camiseta Básica", price: 49.9, sku: "CAM-001", type: "unit", unit: "un" },
-  { id: "2", name: "Café Espresso", price: 6.0, sku: "CAF-ESP", type: "unit", unit: "un" },
-  { id: "3", name: "Pão de Queijo (100g)", price: 3.5, sku: "PDQ-100", type: "unit", unit: "un" },
-  { id: "4", name: "Shampoo 300ml", price: 29.9, sku: "SHA-300", type: "unit", unit: "un" },
-  { id: "5", name: "Parafusos (10 un)", price: 12.5, sku: "PAR-010", type: "unit", unit: "un" },
-  { id: "6", name: "Pizza Mussarela (fatia)", price: 9.9, sku: "PIZ-MUS", type: "unit", unit: "un" },
-  { id: "7", name: "Ração Premium 1kg", price: 24.9, sku: "RAC-1KG", type: "unit", unit: "kg" },
-  { id: "8", name: "Cerveja Artesanal 600ml", price: 19.9, sku: "CER-600", type: "unit", unit: "un" },
+  { id: "1", name: "Camiseta Básica", price: 49.9, sku: "CAM-001", type: "unit", unit: "un", category: "Vestuário", image: imgCamiseta },
+  { id: "2", name: "Café Espresso", price: 6.0, sku: "CAF-ESP", type: "unit", unit: "un", category: "Bebidas", image: imgCafe },
+  { id: "3", name: "Pão de Queijo (100g)", price: 3.5, sku: "PDQ-100", type: "unit", unit: "un", category: "Padaria", image: imgPao },
+  { id: "4", name: "Shampoo 300ml", price: 29.9, sku: "SHA-300", type: "unit", unit: "un", category: "Higiene" },
+  { id: "5", name: "Parafusos (10 un)", price: 12.5, sku: "PAR-010", type: "unit", unit: "un", category: "Ferragens" },
+  { id: "6", name: "Pizza Mussarela (fatia)", price: 9.9, sku: "PIZ-MUS", type: "unit", unit: "un", category: "Pizzaria", image: imgPizzaFatia },
+  { id: "7", name: "Ração Premium 1kg", price: 24.9, sku: "RAC-1KG", type: "unit", unit: "kg", category: "Pets" },
+  { id: "8", name: "Cerveja Artesanal 600ml", price: 19.9, sku: "CER-600", type: "unit", unit: "un", category: "Bebidas", image: imgCerveja },
   // Pesáveis (por kg)
-  { id: "9", name: "Banana Prata (kg)", price: 7.99, sku: "BAL-001", type: "weight", unit: "kg" },
-  { id: "10", name: "Queijo Mussarela (kg)", price: 39.9, sku: "BAL-QUEIJO", type: "weight", unit: "kg" },
-  { id: "11", name: "Carne Bovina Patinho (kg)", price: 48.9, sku: "BAL-CARNE", type: "weight", unit: "kg" },
+  { id: "9", name: "Banana Prata (kg)", price: 7.99, sku: "BAL-001", type: "weight", unit: "kg", category: "Hortifruti", image: imgBanana },
+  { id: "10", name: "Queijo Mussarela (kg)", price: 39.9, sku: "BAL-QUEIJO", type: "weight", unit: "kg", category: "Frios" },
+  { id: "11", name: "Carne Bovina Patinho (kg)", price: 48.9, sku: "BAL-CARNE", type: "weight", unit: "kg", category: "Açougue" },
 ];
 
 function currency(n: number) {
@@ -77,6 +85,8 @@ export default function PDV() {
           sku: p.sku,
           type: p.type === "weight" || (p as any).weighable ? "weight" : (p.type === "service" ? "service" : "unit"),
           unit: p.unit || "un",
+          image: p.image,
+          category: p.category,
         }));
     }
     return sampleProducts;
@@ -196,8 +206,8 @@ export default function PDV() {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>PDV Completo — Unidade e Peso, Descontos e Multipagamento</title>
-        <meta name="description" content="PDV rápido e completo com produtos por unidade e kg, descontos por item e pedido, observações e multipagamento." />
+        <title>PDV Completo — Unidade, Peso, Fotos e Multipagamento</title>
+        <meta name="description" content="PDV com produtos por unidade e kg, fotos mockadas, edição rápida por item, descontos por item/pedido e multipagamento." />
         <link rel="canonical" href="/pdv" />
       </Helmet>
 
@@ -210,6 +220,7 @@ export default function PDV() {
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => { setItems([]); setPayments([]); setOrderDiscType("amount"); setOrderDiscValue(0); }}>Nova venda</Button>
             <Button variant="secondary" onClick={() => setPayOpen(true)} disabled={!items.length}>Pagamento</Button>
+            <Button variant="outline" onClick={() => ensurePrinterConnected()}>Conectar impressora</Button>
           </div>
         </div>
       </header>
@@ -218,17 +229,32 @@ export default function PDV() {
         {/* Produtos */}
         <section className="md:col-span-2 space-y-4">
           <div className="flex gap-3">
-            <Input placeholder="Buscar por nome, SKU ou código de barras" value={query} onChange={e => setQuery(e.target.value)} />
+            <Input placeholder="Buscar por nome, SKU ou código de barras" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const q = query.trim().toLowerCase();
+                const list = products;
+                const exact = list.find(p => p.sku?.toLowerCase() === q || p.name.toLowerCase() === q);
+                const pick = exact || (list.length === 1 ? list[0] : undefined);
+                if (pick) {
+                  handleProductClick(pick);
+                  setQuery("");
+                }
+              }
+            }} />
             <Button onClick={() => setQuery("")}>Limpar</Button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map(p => (
               <Card key={p.id} className="p-4 cursor-pointer hover:shadow-md transition" onClick={() => handleProductClick(p)}>
-                <div className="h-24 rounded-md bg-gradient-to-br from-brand/10 via-brand-2/10 to-brand-3/10" aria-hidden="true" />
+                {p.image ? (
+                  <img src={p.image} alt={`Foto de ${p.name}`} loading="lazy" className="h-24 w-full object-cover rounded-md" />
+                ) : (
+                  <div className="h-24 rounded-md bg-gradient-to-br from-brand/10 via-brand-2/10 to-brand-3/10" aria-hidden="true" />
+                )}
                 <div className="mt-3">
                   <div className="text-sm text-muted-foreground">{p.sku}</div>
-                  <div className="font-medium leading-tight">{p.name}</div>
+                  <div className="font-medium leading-tight truncate" title={p.name}>{p.name}</div>
                   <div className="text-sm mt-1">
                     {p.type === "weight" ? `${currency(p.price)} / ${p.unit ?? "kg"}` : currency(p.price)}
                   </div>
@@ -326,6 +352,71 @@ export default function PDV() {
           </Card>
         </aside>
       </main>
+
+      {/* Edição/Adição de Item */}
+      <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingMode === "edit" ? "Editar item" : "Adicionar item"}</DialogTitle>
+          </DialogHeader>
+          {draftItem && (
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground">{draftItem.name}</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Quantidade</div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step={draftItem.type === "weight" ? 0.001 : 1}
+                    min={draftItem.type === "weight" ? 0.001 : 1}
+                    value={draftItem.qty}
+                    onChange={(e) => setDraftItem((d) => d ? { ...d, qty: parseFloat(e.target.value) || 0 } : d)}
+                  />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Observação</div>
+                  <Textarea
+                    value={draftItem.note || ""}
+                    onChange={(e) => setDraftItem((d) => d ? { ...d, note: e.target.value } : d)}
+                    placeholder="Ex: sem cebola, ponto da carne..."
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3 items-end">
+                <div className="col-span-1">
+                  <div className="text-xs text-muted-foreground mb-1">Tipo de desconto</div>
+                  <Select value={draftItem.discType} onValueChange={(v: "amount" | "percent") => setDraftItem((d) => d ? { ...d, discType: v } : d)}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="amount">R$</SelectItem>
+                      <SelectItem value="percent">%</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-xs text-muted-foreground mb-1">Valor do desconto</div>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step={draftItem.discType === "percent" ? 1 : 0.01}
+                    min={0}
+                    value={draftItem.discValue ?? 0}
+                    onChange={(e) => setDraftItem((d) => d ? { ...d, discValue: parseFloat(e.target.value) || 0 } : d)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setItemDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={saveDraftItem}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagamento */}
       <Dialog open={payOpen} onOpenChange={setPayOpen}>
