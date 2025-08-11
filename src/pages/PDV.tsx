@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useProducts } from "@/store/products";
+import { Sector } from "@/types/product";
+import { ensurePrinterConnected, printSaleReceipt, printSectorTickets } from "@/features/printing/print";
+import { loadSettings } from "@/store/settings";
 
 interface Product {
   id: string;
@@ -146,18 +149,48 @@ export default function PDV() {
   const remaining = Math.max(total - paid, 0);
   const change = Math.max(paid - total, 0);
 
-  const finalize = () => {
-    const paid = payments.reduce((s, p) => s + (Number.isFinite(p.amount) ? p.amount : 0), 0);
+  const handleQuickPay = async (method: string) => {
+    // pagamento rápido: assume pagamento integral no método escolhido
+    const pay = [{ method, amount: total }];
+    await doFinalize(pay);
+  };
+
+  const doFinalize = async (payms?: { method: string; amount: number }[]) => {
+    const payList = payms ?? payments;
+    const paid = payList.reduce((s, p) => s + (Number.isFinite(p.amount) ? p.amount : 0), 0);
     if (paid + 1e-6 < total) {
       toast.error("Pagamento insuficiente. Complete o valor para finalizar.");
       return;
     }
+
+    try {
+      // Impressão do recibo
+      const receiptItems = items.map(i => ({ name: i.name, qty: i.qty, price: i.price, unit: i.unit }));
+      await printSaleReceipt({
+        items: receiptItems,
+        subtotal,
+        orderDiscount,
+        total,
+        payments: payList,
+        change: Math.max(paid - total, 0),
+      });
+
+      // Comandas por setor
+      const settings = loadSettings();
+      if (settings.sectorPrinting) {
+        await printSectorTickets(items.map(i => ({ name: i.name, qty: i.qty, note: i.note, printSector: (i as any).printSector as Sector })));
+      }
+
+      toast.success("Venda finalizada com sucesso!");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha na impressão");
+    }
+
     setPayOpen(false);
     setItems([]);
     setPayments([]);
     setOrderDiscType("amount");
     setOrderDiscValue(0);
-    toast.success("Venda finalizada com sucesso!");
   };
 
   return (
@@ -301,17 +334,17 @@ export default function PDV() {
             <DialogTitle>Pagamento</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <Button variant="secondary" onClick={finalize}>Dinheiro</Button>
-            <Button variant="secondary" onClick={finalize}>Pix</Button>
-            <Button variant="secondary" onClick={finalize}>Crédito</Button>
-            <Button variant="secondary" onClick={finalize}>Débito</Button>
-            <Button variant="secondary" onClick={finalize}>Boleto</Button>
-            <Button variant="secondary" onClick={finalize}>Fiado</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Dinheiro")}>Dinheiro</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Pix")}>Pix</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Crédito")}>Crédito</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Débito")}>Débito</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Boleto")}>Boleto</Button>
+            <Button variant="secondary" onClick={() => handleQuickPay("Fiado")}>Fiado</Button>
           </div>
           <DialogFooter>
             <div className="w-full flex items-center justify-between">
               <div className="text-sm text-muted-foreground">Total</div>
-              <div className="text-lg font-semibold">{currency(subtotal)}</div>
+              <div className="text-lg font-semibold">{currency(total)}</div>
             </div>
           </DialogFooter>
         </DialogContent>

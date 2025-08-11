@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PDV from "./pages/PDV";
 import Catalog from "./pages/Catalog";
+import Printers from "./pages/Settings/Printers";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/pdv" element={<PDV />} />
             <Route path="/catalog" element={<Catalog />} />
+            <Route path="/settings/printers" element={<Printers />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
