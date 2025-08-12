@@ -74,6 +74,10 @@ export default function PDV() {
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
 
   const { products: catalog } = useProducts();
+  const settingsAll = loadSettings();
+  const niche = settingsAll.niche || "Geral";
+  const enabledModules = settingsAll.enabledModules || {};
+
   const sourceProducts: Product[] = useMemo(() => {
     if (catalog.length) {
       return catalog
@@ -216,8 +220,12 @@ export default function PDV() {
           <div className="flex-1">
             <h1 className="text-xl font-semibold">PDV — Frente de Loja</h1>
             <p className="text-sm text-muted-foreground">Toque nos produtos ou leia código de barras</p>
+            <div className="text-xs text-muted-foreground mt-1">Nicho: {niche}</div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <a href="/settings/modules">Módulos</a>
+            </Button>
             <Button variant="outline" onClick={() => { setItems([]); setPayments([]); setOrderDiscType("amount"); setOrderDiscValue(0); }}>Nova venda</Button>
             <Button variant="secondary" onClick={() => setPayOpen(true)} disabled={!items.length}>Pagamento</Button>
             <Button variant="outline" onClick={() => ensurePrinterConnected()}>Conectar impressora</Button>

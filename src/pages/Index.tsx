@@ -32,7 +32,7 @@ const Index = () => {
         <nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
           <a href="/catalog" className="hover:text-foreground">Catálogo</a>
           <a href="/settings/printers" className="hover:text-foreground">Impressoras</a>
-          <a href="#modulos" className="hover:text-foreground">Módulos</a>
+          <a href="/settings/modules" className="hover:text-foreground">Módulos</a>
           <a href="#recursos" className="hover:text-foreground">Recursos</a>
           <a href="#demo" className="hover:text-foreground">Demo</a>
         </nav>
