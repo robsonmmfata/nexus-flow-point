@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import PaymentDialog from "./PDV/PaymentDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -74,6 +75,48 @@ export default function PDV() {
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
 
   const { products: catalog } = useProducts();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      const isTyping = tag === 'input' || tag === 'textarea' || (e.target as HTMLElement)?.isContentEditable;
+      if (isTyping) return;
+
+      if (e.key === 'F2') {
+        e.preventDefault();
+        setPayOpen(true);
+        return;
+      }
+
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setItems(prev => {
+          if (!prev.length) return prev;
+          const lastId = prev[prev.length - 1].id;
+          return prev.map(i => i.id === lastId ? { ...i, qty: i.qty + 1 } : i);
+        });
+        return;
+      }
+
+      if (e.key === '-') {
+        e.preventDefault();
+        setItems(prev => {
+          if (!prev.length) return prev;
+          const last = prev[prev.length - 1];
+          if (last.qty <= 1) return prev.slice(0, -1);
+          const lastId = last.id;
+          return prev.map(i => i.id === lastId ? { ...i, qty: Math.max(i.qty - 1, 0) } : i);
+        });
+        return;
+      }
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        setItems(prev => prev.slice(0, -1));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [setItems, setPayOpen]);
   const sourceProducts: Product[] = useMemo(() => {
     if (catalog.length) {
       return catalog
@@ -419,27 +462,16 @@ export default function PDV() {
       </Dialog>
 
       {/* Pagamento */}
-      <Dialog open={payOpen} onOpenChange={setPayOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Pagamento</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <Button variant="secondary" onClick={() => handleQuickPay("Dinheiro")}>Dinheiro</Button>
-            <Button variant="secondary" onClick={() => handleQuickPay("Pix")}>Pix</Button>
-            <Button variant="secondary" onClick={() => handleQuickPay("Crédito")}>Crédito</Button>
-            <Button variant="secondary" onClick={() => handleQuickPay("Débito")}>Débito</Button>
-            <Button variant="secondary" onClick={() => handleQuickPay("Boleto")}>Boleto</Button>
-            <Button variant="secondary" onClick={() => handleQuickPay("Fiado")}>Fiado</Button>
-          </div>
-          <DialogFooter>
-            <div className="w-full flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">Total</div>
-              <div className="text-lg font-semibold">{currency(total)}</div>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PaymentDialog
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        total={total}
+        payments={payments}
+        onAddPayment={(p) => setPayments((prev) => [...prev, p])}
+        onRemovePayment={(idx) => setPayments((prev) => prev.filter((_, i) => i !== idx))}
+        onQuickPay={handleQuickPay}
+        onFinalize={() => doFinalize()}
+      />
     </div>
   );
 }

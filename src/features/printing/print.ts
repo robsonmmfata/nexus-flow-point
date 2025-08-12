@@ -23,6 +23,7 @@ export async function printSaleReceipt(args: {
 }) {
   const s = loadSettings();
   const b = new EscPosBuilder().init();
+  const now = new Date();
 
   b.align("center").bold(true).ln(s.businessName || "PDV")
     .bold(false)
@@ -33,12 +34,14 @@ export async function printSaleReceipt(args: {
     .separator();
 
   b.align("left");
+  b.kv("Data/Hora", now.toLocaleString("pt-BR"));
   for (const it of args.items) {
     b.ln(`${it.name}`);
     const qty = it.qty.toLocaleString("pt-BR", { minimumFractionDigits: it.unit === "kg" ? 3 : 0 });
     b.kv(`${qty} ${it.unit ?? ""} x ${currency(it.price)}`.trim(), currency(it.price * it.qty));
   }
   b.separator();
+  b.kv("Itens", String(args.items.length));
   b.kv("Subtotal", currency(args.subtotal));
   if (args.orderDiscount > 0) b.kv("Desconto", `- ${currency(args.orderDiscount)}`);
   b.kv("Total", currency(args.total));
