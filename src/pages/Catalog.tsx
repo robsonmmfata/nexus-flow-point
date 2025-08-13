@@ -140,7 +140,7 @@ export default function Catalog() {
           name="description"
           content="Cadastro de produtos, combos e pizza 1/2 com setores, imagens, EAN e visibilidade no PDV."
         />
-        <link rel="canonical" href="/catalog" />
+        <link rel="canonical" href={`${window.location.origin}/catalog`} />
       </Helmet>
 
       <header className="border-b sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
