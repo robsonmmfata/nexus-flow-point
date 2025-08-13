@@ -3,7 +3,7 @@ import hero from "@/assets/hero-pdv.jpg";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const niches = [
   "Vestuário", "Mercado", "Padaria", "Restaurante/Pizza", "Beleza", "Pet Shop", "Autopeças", "Bebidas", "Material Construção"
@@ -30,8 +30,8 @@ const Index = () => {
           <span className="font-semibold">PDV Multi-nicho</span>
         </div>
         <nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
-          <a href="/catalog" className="hover:text-foreground">Catálogo</a>
-          <a href="/settings/printers" className="hover:text-foreground">Impressoras</a>
+          <Link to="/catalog" className="hover:text-foreground">Catálogo</Link>
+          <Link to="/settings/printers" className="hover:text-foreground">Impressoras</Link>
           <a href="#modulos" className="hover:text-foreground">Módulos</a>
           <a href="#recursos" className="hover:text-foreground">Recursos</a>
           <a href="#demo" className="hover:text-foreground">Demo</a>
@@ -49,7 +49,7 @@ const Index = () => {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button variant="hero" onClick={() => navigate("/pdv")}>Abrir PDV Demo</Button>
                 <Button variant="outline" asChild>
-                  <a href="/catalog">Abrir Catálogo</a>
+                  <Link to="/catalog">Abrir Catálogo</Link>
                 </Button>
                 <Button variant="outline" asChild>
                   <a href="#modulos">Ver módulos</a>

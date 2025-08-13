@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -153,7 +154,7 @@ export default function Catalog() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <a href="/">Início</a>
+              <Link to="/">Início</Link>
             </Button>
             <Button onClick={startNew}>Novo produto</Button>
           </div>
