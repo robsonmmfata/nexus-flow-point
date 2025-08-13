@@ -33,7 +33,7 @@ export default function Printers() {
       <Helmet>
         <title>Configurar Impressoras — PDV Multi-nicho</title>
         <meta name="description" content="Conecte impressoras POS-80 via WebUSB e personalize o cabeçalho." />
-        <link rel="canonical" href="/settings/printers" />
+        <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/settings/printers" />
       </Helmet>
 
       <header className="container py-6 border-b">

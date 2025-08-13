@@ -141,7 +141,7 @@ export default function Catalog() {
           name="description"
           content="Cadastro de produtos, combos e pizza 1/2 com setores, imagens, EAN e visibilidade no PDV."
         />
-        <link rel="canonical" href={`${window.location.origin}/catalog`} />
+        <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/catalog" />
       </Helmet>
 
       <header className="border-b sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -172,7 +172,7 @@ export default function Catalog() {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => window.location.reload()}>Recarregar</Button>
+              <Button variant="outline" onClick={() => {window.location.reload()}}>Recarregar</Button>
             </div>
           </div>
           <Separator className="my-4" />

@@ -18,7 +18,7 @@ const Index = () => {
       <Helmet>
         <title>PDV Modular Multi-nicho — Rápido e Configurável</title>
         <meta name="description" content="Sistema PDV moderno, multi-nicho, responsivo e pronto para frente de loja." />
-        <link rel="canonical" href={window.location.origin} />
+        <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/" />
         <link rel="image_src" href={hero} />
         <meta property="og:title" content="PDV Modular Multi-nicho" />
         <meta property="og:description" content="Rápido, confiável e configurável para diversos segmentos." />

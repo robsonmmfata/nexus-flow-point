@@ -114,6 +114,8 @@ export default function PDV() {
         setItems(prev => prev.slice(0, -1));
       }
     };
+    if (typeof window === "undefined") return;
+    
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [setItems, setPayOpen]);
@@ -251,7 +253,7 @@ export default function PDV() {
       <Helmet>
         <title>PDV Completo — Unidade, Peso, Fotos e Multipagamento</title>
         <meta name="description" content="PDV com produtos por unidade e kg, fotos mockadas, edição rápida por item, descontos por item/pedido e multipagamento." />
-        <link rel="canonical" href="/pdv" />
+        <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/pdv" />
       </Helmet>
 
       <header className="border-b sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
