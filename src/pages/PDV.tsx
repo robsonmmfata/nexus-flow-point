@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import PaymentDialog from "./PDV/PaymentDialog";
+import ProductGrid from "@/components/PDV/ProductGrid";
+import CartSidebar from "@/components/PDV/CartSidebar";
+import SearchBar from "@/components/PDV/SearchBar";
+import QuickActions from "@/components/PDV/QuickActions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useProducts } from "@/store/products";
@@ -270,133 +274,70 @@ export default function PDV() {
         </div>
       </header>
 
-      <main className="container py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Produtos */}
-        <section className="md:col-span-2 space-y-4">
-          <div className="flex gap-3">
-            <Input placeholder="Buscar por nome, SKU ou código de barras" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const q = query.trim().toLowerCase();
-                const list = products;
-                const exact = list.find(p => p.sku?.toLowerCase() === q || p.name.toLowerCase() === q);
-                const pick = exact || (list.length === 1 ? list[0] : undefined);
-                if (pick) {
-                  handleProductClick(pick);
-                  setQuery("");
-                }
-              }
-            }} />
-            <Button onClick={() => setQuery("")}>Limpar</Button>
-          </div>
+      <main className="container py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left sidebar - Quick Actions */}
+        <aside className="lg:col-span-1 space-y-4">
+          <QuickActions
+            onConnectPrinter={() => ensurePrinterConnected()}
+          />
+        </aside>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map(p => (
-              <Card key={p.id} className="p-4 cursor-pointer hover:shadow-md transition" onClick={() => handleProductClick(p)}>
-                {p.image ? (
-                  <img src={p.image} alt={`Foto de ${p.name}`} loading="lazy" className="h-24 w-full object-cover rounded-md" />
-                ) : (
-                  <div className="h-24 rounded-md bg-gradient-to-br from-brand/10 via-brand-2/10 to-brand-3/10" aria-hidden="true" />
-                )}
-                <div className="mt-3">
-                  <div className="text-sm text-muted-foreground">{p.sku}</div>
-                  <div className="font-medium leading-tight truncate" title={p.name}>{p.name}</div>
-                  <div className="text-sm mt-1">
-                    {p.type === "weight" ? `${currency(p.price)} / ${p.unit ?? "kg"}` : currency(p.price)}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+        {/* Main content - Products */}
+        <section className="lg:col-span-2 space-y-4">
+          <SearchBar
+            query={query}
+            onQueryChange={setQuery}
+            onEnterSearch={() => {
+              const q = query.trim().toLowerCase();
+              const list = products;
+              const exact = list.find(p => p.sku?.toLowerCase() === q || p.name.toLowerCase() === q);
+              const pick = exact || (list.length === 1 ? list[0] : undefined);
+              if (pick) {
+                handleProductClick(pick);
+                setQuery("");
+              }
+            }}
+          />
+
+          <ProductGrid
+            products={products}
+            onProductClick={handleProductClick}
+            query={query}
+          />
         </section>
 
-        {/* Carrinho */}
-        <aside className="space-y-4">
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold">Carrinho</h2>
-            <Separator className="my-3" />
-            <div className="space-y-3 max-h-[50vh] overflow-auto pr-2">
-              {items.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nenhum item adicionado.</p>
-              )}
-              {items.map(i => (
-                <div key={i.id} className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <button
-                      className="font-medium leading-tight hover:underline text-left truncate"
-                      onClick={() => openEditItem(i)}
-                      title="Editar item"
-                    >
-                      {i.name}
-                    </button>
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      <span>{i.sku}</span>
-                      {i.discValue ? (
-                        <span>
-                          desc: {i.discType === "percent" ? `${i.discValue}%` : currency(i.discValue)}
-                        </span>
-                      ) : null}
-                    </div>
-                    {i.note ? <div className="text-xs text-muted-foreground truncate">Obs: {i.note}</div> : null}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => dec(i.id)}>-</Button>
-                    <span className="w-12 text-center">
-                      {i.qty.toLocaleString("pt-BR", { minimumFractionDigits: i.type === "weight" ? 3 : 0 })}
-                      {i.unit ? ` ${i.unit}` : ""}
-                    </span>
-                    <Button size="sm" variant="outline" onClick={() => inc(i.id)}>+</Button>
-                  </div>
-                  <div className="text-right min-w-24">
-                    <div className="text-sm">{currency(lineTotal(i))}</div>
-                    <Button variant="ghost" size="sm" onClick={() => remove(i.id)}>Remover</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Separator className="my-3" />
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span>Subtotal</span>
-                <span className="font-medium">{currency(subtotal)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Select value={orderDiscType} onValueChange={(v: "amount" | "percent") => setOrderDiscType(v)}>
-                  <SelectTrigger className="w-28 h-9">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="amount">Desc. (R$)</SelectItem>
-                    <SelectItem value="percent">Desc. (%)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  className="h-9"
-                  value={orderDiscValue}
-                  onChange={(e) => setOrderDiscValue(parseFloat(e.target.value) || 0)}
-                  step={orderDiscType === "percent" ? 1 : 0.01}
-                  min={0}
-                  placeholder="Desconto"
-                />
-                <div className="ml-auto text-right">
-                  <div className="text-xs text-muted-foreground">Desconto</div>
-                  <div className="font-medium">
-                    {orderDiscType === "percent"
-                      ? `${orderDiscValue}% (${currency(orderDiscount)})`
-                      : currency(orderDiscount)}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-base">
-                <span className="font-medium">Total</span>
-                <span className="font-semibold">{currency(total)}</span>
-              </div>
-            </div>
-            <Button className="mt-4 w-full" onClick={() => setPayOpen(true)} disabled={!items.length}>Ir para pagamento</Button>
-          </Card>
+        {/* Right sidebar - Cart */}
+        <aside className="lg:col-span-1">
+          <CartSidebar
+            items={items}
+            onEditItem={(item) => {
+              setEditingMode("edit");
+              setDraftItem(item);
+              setItemDialogOpen(true);
+            }}
+            onRemoveItem={(id) => {
+              setItems(prev => prev.filter(i => i.id !== id));
+            }}
+            onUpdateQuantity={(id, qty) => {
+              setItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i));
+            }}
+            onPayment={() => setPayOpen(true)}
+            onNewSale={() => {
+              setItems([]);
+              setPayments([]);
+              setOrderDiscType("amount");
+              setOrderDiscValue(0);
+            }}
+            subtotal={subtotal}
+            orderDiscType={orderDiscType}
+            orderDiscValue={orderDiscValue}
+            onOrderDiscTypeChange={setOrderDiscType}
+            onOrderDiscValueChange={setOrderDiscValue}
+            total={total}
+          />
         </aside>
       </main>
+
 
       {/* Edição/Adição de Item */}
       <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
