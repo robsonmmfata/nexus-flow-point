@@ -263,6 +263,18 @@ export default function PDV() {
     setOrderDiscValue(0);
   };
 
+  const resetSale = () => {
+    setItems([]);
+    setPayments([]);
+    setOrderDiscType("amount");
+    setOrderDiscValue(0);
+    setQuery("");
+    setSelectedCategory(null);
+    setDraftItem(null);
+    setItemDialogOpen(false);
+    setPayOpen(false);
+  };
+
   return (
     <PDVWrapper>
       <div className="min-h-screen bg-background">
