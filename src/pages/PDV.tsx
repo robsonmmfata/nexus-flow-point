@@ -31,6 +31,7 @@ interface Product {
   name: string;
   price: number; // unit price or price per kg for weighted items
   sku?: string;
+  barcode?: string;
   type?: "unit" | "weight" | "service";
   unit?: string; // ex: un, kg, g, lt
   image?: string;
@@ -66,6 +67,7 @@ function currency(n: number) {
 export default function PDV() {
   const { config, isModuleEnabled } = useStoreConfig();
   const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [items, setItems] = useState<CartItem[]>([]);
   const [payOpen, setPayOpen] = useState(false);
 
@@ -135,6 +137,7 @@ export default function PDV() {
           name: p.name,
           price: p.price,
           sku: p.sku,
+          barcode: p.barcode,
           type: p.type === "weight" || (p as any).weighable ? "weight" : (p.type === "service" ? "service" : "unit"),
           unit: p.unit || "un",
           image: p.image,
@@ -144,13 +147,18 @@ export default function PDV() {
     return sampleProducts;
   }, [catalog]);
 
+  const filteredByCategory = useMemo(() => {
+    if (!selectedCategory) return sourceProducts;
+    return sourceProducts.filter(p => p.category === selectedCategory);
+  }, [sourceProducts, selectedCategory]);
+
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sourceProducts;
-    return sourceProducts.filter(p =>
-      p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q)
+    if (!q) return filteredByCategory;
+    return filteredByCategory.filter(p =>
+      p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q) || p.barcode?.toLowerCase().includes(q)
     );
-  }, [query, sourceProducts]);
+  }, [query, filteredByCategory]);
 
   const addItem = (p: Product) => {
     setItems(prev => {
@@ -255,6 +263,18 @@ export default function PDV() {
     setOrderDiscValue(0);
   };
 
+  const resetSale = () => {
+    setItems([]);
+    setPayments([]);
+    setOrderDiscType("amount");
+    setOrderDiscValue(0);
+    setQuery("");
+    setSelectedCategory(null);
+    setDraftItem(null);
+    setItemDialogOpen(false);
+    setPayOpen(false);
+  };
+
   return (
     <PDVWrapper>
       <div className="min-h-screen bg-background">
@@ -271,7 +291,7 @@ export default function PDV() {
             <p className="text-sm text-muted-foreground">Toque nos produtos ou leia código de barras</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => { setItems([]); setPayments([]); setOrderDiscType("amount"); setOrderDiscValue(0); }}>Nova venda</Button>
+            <Button variant="outline" onClick={resetSale}>Nova venda</Button>
             <Button variant="secondary" onClick={() => setPayOpen(true)} disabled={!items.length}>Pagamento</Button>
             <Button variant="outline" onClick={() => ensurePrinterConnected()}>Conectar impressora</Button>
             <Button variant="ghost" asChild>
@@ -295,11 +315,11 @@ export default function PDV() {
         <section className="lg:col-span-2 space-y-4">
           <SearchBar
             query={query}
-            onQueryChange={setQuery}
+            onQueryChange={(v) => { setQuery(v); }}
             onEnterSearch={() => {
               const q = query.trim().toLowerCase();
               const list = products;
-              const exact = list.find(p => p.sku?.toLowerCase() === q || p.name.toLowerCase() === q);
+              const exact = list.find(p => p.sku?.toLowerCase() === q || p.name.toLowerCase() === q || p.barcode?.toLowerCase() === q);
               const pick = exact || (list.length === 1 ? list[0] : undefined);
               if (pick) {
                 handleProductClick(pick);
@@ -312,6 +332,8 @@ export default function PDV() {
             products={products}
             onProductClick={handleProductClick}
             query={query}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
           />
         </section>
 
@@ -331,12 +353,7 @@ export default function PDV() {
               setItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i));
             }}
             onPayment={() => setPayOpen(true)}
-            onNewSale={() => {
-              setItems([]);
-              setPayments([]);
-              setOrderDiscType("amount");
-              setOrderDiscValue(0);
-            }}
+            onNewSale={resetSale}
             subtotal={subtotal}
             orderDiscType={orderDiscType}
             orderDiscValue={orderDiscValue}

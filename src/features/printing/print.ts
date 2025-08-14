@@ -22,36 +22,41 @@ export async function printSaleReceipt(args: {
   change: number;
 }) {
   const s = loadSettings();
-  const b = new EscPosBuilder().init();
+  const copies = Math.max(1, s.receiptCopies ?? 1);
   const now = new Date();
 
-  b.align("center").bold(true).ln(s.businessName || "PDV")
-    .bold(false)
-    .ln(s.slogan || "")
-    .ln(s.cnpj ? `CNPJ: ${s.cnpj}` : "")
-    .ln(s.phone || "")
-    .ln(s.address || "")
-    .separator();
-
-  b.align("left");
-  b.kv("Data/Hora", now.toLocaleString("pt-BR"));
-  for (const it of args.items) {
-    b.ln(`${it.name}`);
-    const qty = it.qty.toLocaleString("pt-BR", { minimumFractionDigits: it.unit === "kg" ? 3 : 0 });
-    b.kv(`${qty} ${it.unit ?? ""} x ${currency(it.price)}`.trim(), currency(it.price * it.qty));
-  }
-  b.separator();
-  b.kv("Itens", String(args.items.length));
-  b.kv("Subtotal", currency(args.subtotal));
-  if (args.orderDiscount > 0) b.kv("Desconto", `- ${currency(args.orderDiscount)}`);
-  b.kv("Total", currency(args.total));
-  b.separator();
-  for (const p of args.payments) b.kv(p.method, currency(p.amount));
-  if (args.change > 0) b.kv("Troco", currency(args.change));
-  b.feed(2).align("center").ln("Obrigado pela preferência!").feed(3).cut();
-
   await ensurePrinter();
-  await printRaw(b.build());
+
+  for (let c = 0; c < copies; c++) {
+    const b = new EscPosBuilder().init();
+
+    b.align("center").bold(true).ln(s.businessName || "PDV")
+      .bold(false)
+      .ln(s.slogan || "")
+      .ln(s.cnpj ? `CNPJ: ${s.cnpj}` : "")
+      .ln(s.phone || "")
+      .ln(s.address || "")
+      .separator();
+  
+    b.align("left");
+    b.kv("Data/Hora", now.toLocaleString("pt-BR"));
+    for (const it of args.items) {
+      b.ln(`${it.name}`);
+      const qty = it.qty.toLocaleString("pt-BR", { minimumFractionDigits: it.unit === "kg" ? 3 : 0 });
+      b.kv(`${qty} ${it.unit ?? ""} x ${currency(it.price)}`.trim(), currency(it.price * it.qty));
+    }
+    b.separator();
+    b.kv("Itens", String(args.items.length));
+    b.kv("Subtotal", currency(args.subtotal));
+    if (args.orderDiscount > 0) b.kv("Desconto", `- ${currency(args.orderDiscount)}`);
+    b.kv("Total", currency(args.total));
+    b.separator();
+    for (const p of args.payments) b.kv(p.method, currency(p.amount));
+    if (args.change > 0) b.kv("Troco", currency(args.change));
+    b.feed(2).align("center").ln("Obrigado pela preferência!").feed(3).cut();
+  
+    await printRaw(b.build());
+  }
 }
 
 export async function printSectorTickets(items: { name: string; qty: number; note?: string; printSector?: Sector }[]) {
