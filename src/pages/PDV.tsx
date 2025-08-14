@@ -5,6 +5,8 @@ import ProductGrid from "@/components/PDV/ProductGrid";
 import CartSidebar from "@/components/PDV/CartSidebar";
 import SearchBar from "@/components/PDV/SearchBar";
 import QuickActions from "@/components/PDV/QuickActions";
+import PDVWrapper from "@/components/PDV/PDVWrapper";
+import { useStoreConfig } from "@/store/modules";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -62,6 +64,7 @@ function currency(n: number) {
 }
 
 export default function PDV() {
+  const { config, isModuleEnabled } = useStoreConfig();
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<CartItem[]>([]);
   const [payOpen, setPayOpen] = useState(false);
@@ -253,23 +256,27 @@ export default function PDV() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>PDV Completo — Unidade, Peso, Fotos e Multipagamento</title>
-        <meta name="description" content="PDV com produtos por unidade e kg, fotos mockadas, edição rápida por item, descontos por item/pedido e multipagamento." />
-        <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/pdv" />
-      </Helmet>
+    <PDVWrapper>
+      <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>PDV — {config?.businessName || "Sistema de Vendas"}</title>
+          <meta name="description" content="Sistema de ponto de venda moderno e eficiente." />
+          <link rel="canonical" href="https://nexus-flow-point-ehh1.vercel.app/pdv" />
+        </Helmet>
 
       <header className="border-b sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex items-center gap-4 py-4">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold">PDV — Frente de Loja</h1>
+            <h1 className="text-xl font-semibold">PDV — {config?.businessName || "Frente de Loja"}</h1>
             <p className="text-sm text-muted-foreground">Toque nos produtos ou leia código de barras</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => { setItems([]); setPayments([]); setOrderDiscType("amount"); setOrderDiscValue(0); }}>Nova venda</Button>
             <Button variant="secondary" onClick={() => setPayOpen(true)} disabled={!items.length}>Pagamento</Button>
             <Button variant="outline" onClick={() => ensurePrinterConnected()}>Conectar impressora</Button>
+            <Button variant="ghost" asChild>
+              <a href="/settings/modules">Configurações</a>
+            </Button>
           </div>
         </div>
       </header>
@@ -279,6 +286,8 @@ export default function PDV() {
         <aside className="lg:col-span-1 space-y-4">
           <QuickActions
             onConnectPrinter={() => ensurePrinterConnected()}
+            enabledModules={config?.enabledModules || []}
+            storeName={config?.businessName || ""}
           />
         </aside>
 
@@ -337,7 +346,6 @@ export default function PDV() {
           />
         </aside>
       </main>
-
 
       {/* Edição/Adição de Item */}
       <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
@@ -415,6 +423,7 @@ export default function PDV() {
         onQuickPay={handleQuickPay}
         onFinalize={() => doFinalize()}
       />
-    </div>
+      </div>
+    </PDVWrapper>
   );
 }

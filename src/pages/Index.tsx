@@ -47,12 +47,12 @@ const Index = () => {
               <h1 className="text-4xl md:text-5xl font-bold leading-tight">Sistema PDV modular para qualquer nicho</h1>
               <p className="mt-4 text-lg text-muted-foreground">Rápido, confiável e pronto para touchscreen, com módulos ativáveis conforme seu segmento.</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button variant="hero" onClick={() => navigate("/pdv")}>Abrir PDV Demo</Button>
-                <Button variant="outline" asChild>
-                  <Link to="/catalog">Abrir Catálogo</Link>
+                <Button variant="hero" asChild>
+                  <Link to="/store-setup">Configurar Loja</Link>
                 </Button>
+                <Button variant="outline" onClick={() => navigate("/pdv")}>PDV Demo</Button>
                 <Button variant="outline" asChild>
-                  <a href="#modulos">Ver módulos</a>
+                  <Link to="/catalog">Catálogo</Link>
                 </Button>
               </div>
             </div>

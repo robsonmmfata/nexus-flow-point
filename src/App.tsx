@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import PDV from "./pages/PDV";
 import Catalog from "./pages/Catalog";
 import Printers from "./pages/Settings/Printers";
+import StoreSetup from "./pages/StoreSetup";
+import ModulesSettings from "./pages/Settings/Modules";
 
 const queryClient = new QueryClient();
 
@@ -21,9 +23,11 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/store-setup" element={<StoreSetup />} />
             <Route path="/pdv" element={<PDV />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/settings/printers" element={<Printers />} />
+            <Route path="/settings/modules" element={<ModulesSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
