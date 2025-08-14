@@ -291,7 +291,7 @@ export default function PDV() {
             <p className="text-sm text-muted-foreground">Toque nos produtos ou leia código de barras</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => { setItems([]); setPayments([]); setOrderDiscType("amount"); setOrderDiscValue(0); }}>Nova venda</Button>
+            <Button variant="outline" onClick={resetSale}>Nova venda</Button>
             <Button variant="secondary" onClick={() => setPayOpen(true)} disabled={!items.length}>Pagamento</Button>
             <Button variant="outline" onClick={() => ensurePrinterConnected()}>Conectar impressora</Button>
             <Button variant="ghost" asChild>
@@ -353,12 +353,7 @@ export default function PDV() {
               setItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i));
             }}
             onPayment={() => setPayOpen(true)}
-            onNewSale={() => {
-              setItems([]);
-              setPayments([]);
-              setOrderDiscType("amount");
-              setOrderDiscValue(0);
-            }}
+            onNewSale={resetSale}
             subtotal={subtotal}
             orderDiscType={orderDiscType}
             orderDiscValue={orderDiscValue}
