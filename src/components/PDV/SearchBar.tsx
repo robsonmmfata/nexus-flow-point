@@ -41,6 +41,7 @@ export default function SearchBar({
             }
           }}
           className="pl-10 pr-20 h-12 text-base"
+          autoFocus
         />
         
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

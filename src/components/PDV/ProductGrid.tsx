@@ -17,9 +17,11 @@ interface ProductGridProps {
   products: Product[];
   onProductClick: (product: Product) => void;
   query: string;
+  selectedCategory?: string | null;
+  onSelectCategory?: (category: string | null) => void;
 }
 
-export default function ProductGrid({ products, onProductClick, query }: ProductGridProps) {
+export default function ProductGrid({ products, onProductClick, query, selectedCategory, onSelectCategory }: ProductGridProps) {
   const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
 
   return (
@@ -27,11 +29,20 @@ export default function ProductGrid({ products, onProductClick, query }: Product
       {/* Categories Filter */}
       {categories.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => {}}>
+          <Button
+            variant={selectedCategory ? "outline" : "secondary"}
+            size="sm"
+            onClick={() => onSelectCategory?.(null)}
+          >
             Todas
           </Button>
           {categories.map(category => (
-            <Button key={category} variant="ghost" size="sm" onClick={() => {}}>
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => onSelectCategory?.(category as string)}
+            >
               {category}
             </Button>
           ))}
